@@ -1,9 +1,11 @@
 # Prisma local proxy - test Prisma Edge client locally with local database instead of remote Data Proxy
 
-> This is - currently - in "proof of concept" form. It's being used extensively
+> This is currently in "proof of concept" form. It's being used extensively
 > in a project, but the code likely still has rough edges, could do with some tidying,
 > and isn't (yet) covered by it's own test suite. (It does pass all integration tests in
 > the project I'm using it with).
+
+Associated Prisma feature request: https://github.com/prisma/prisma/issues/20112
 
 #### TODO:
 
