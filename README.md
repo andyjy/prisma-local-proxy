@@ -7,6 +7,7 @@
 
 #### TODO:
 
+- [ ] Check this repo works the same as the version used in my project
 - [ ] Add working example
 - [ ] Add test suite
 - [ ] Tidy code
