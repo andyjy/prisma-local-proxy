@@ -1,0 +1,30 @@
+{
+  "name": "prisma-local-proxy",
+  "description": "For testing Prisma Edge Client with a local database under local development",
+  "repository": "github:andyjy/prisma-local-proxy",
+  "author": "Andy Young",
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "lint": "TIMING=1 eslint --cache .",
+    "typecheck": "tsc --project tsconfig.json --pretty --noEmit",
+    "test": "# no tests yet # jest --config jest.config.js --rootDir ."
+  },
+  "type": "module",
+  "dependencies": {
+    "@ungap/structured-clone": "^1.2.0",
+    "sql-template-tag": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/ungap__structured-clone": "^0.3.0",
+    "next": "^12.0.0 || ^13.0.0"
+  },
+  "peerDependencies": {
+    "@prisma/client": "*",
+    "prisma": "*"
+  },
+  "engines": {
+    "node": "^16.0.0 || ^18.0.0"
+  }
+}

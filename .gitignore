@@ -1,0 +1,9 @@
+.DS_Store
+.eslintcache
+.next/
+.tmp/
+.turbo
+.vercel
+dist/
+node_modules/
+*.tsbuildinfo
