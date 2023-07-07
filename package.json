@@ -3,7 +3,7 @@
   "description": "For testing Prisma Edge Client with a local database under local development",
   "repository": "github:andyjy/prisma-local-proxy",
   "author": "Andy Young",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "scripts": {
     "lint": "TIMING=1 eslint --cache .",
