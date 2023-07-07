@@ -5,6 +5,12 @@
 > and isn't (yet) covered by it's own test suite. (It does pass all integration tests in
 > the project I'm using it with).
 
+#### TODO:
+
+- [ ] Add working example
+- [ ] Add test suite
+- [ ] Tidy code
+
 ## Problem
 
 When developing for Edge runtimes (e.g. Cloudflare Workers) we need to use the Prisma Edge client.
@@ -17,15 +23,15 @@ This library implements a proxy that enables testing use of the Prisma Edge clie
 
 Required elements:
 
-1. Two generated copies of the Prisma client:
+1. **Two generated copies of the Prisma client**:
 
    - one with the Edge client (for your app, used in production)
 
    - the other with the "normal" non-Edge client, to be used by this proxy to query the local database
 
-2. The proxy server itself as defined in `server.ts` running during local development under a HTTP endpoint using the Node.JS runtime - to call the Prisma Query Engine and send the queries to your local database
+2. **The proxy server itself as defined in `server.ts`** running during local development under a HTTP endpoint using the Node.JS runtime - to call the Prisma Query Engine and send the queries to your local database
 
-3. The Prisma Client Extension as defined in `client.ts` applied to your app's Prisma Client during development only (i.e. not in production) - to intercept all queries and send them via the local proxy instead of remote Data Proxy.
+3. **The Prisma Client Extension as defined in `client.ts`** applied to your app's Prisma Client during development only (i.e. not in production) - to intercept all queries and send them via the local proxy instead of remote Data Proxy.
 
 ## How to set this up
 
