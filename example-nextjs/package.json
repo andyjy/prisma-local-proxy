@@ -1,0 +1,25 @@
+{
+  "name": "prisma-local-proxy-example-nextjs",
+  "description": "Example with Next.js for testing Prisma Edge Client with a local database under local development",
+  "scripts": {
+    "generate-prisma-prod": "prisma generate --generator=client --data-proxy",
+    "generate-prisma-local": "prisma generate --generator=client --data-proxy && prisma generate --generator=client_localproxy",
+    "dev": "next dev",
+    "lint": "TIMING=1 eslint --cache .",
+    "typecheck": "tsc --project ../tsconfig.json --pretty --noEmit",
+    "test": "# no tests yet # jest --config jest.config.js --rootDir ."
+  },
+  "dependencies": {
+    "@prisma/client": "5.1.0",
+    "next": "13.4.12",
+    "prisma-local-proxy": "file:../",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/react": "18.2.14",
+    "prisma": "5.1.0",
+    "typescript": "^5.1.3"
+  }
+}

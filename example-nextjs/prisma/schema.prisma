@@ -1,0 +1,27 @@
+// "normal" client, for use in production
+// using dataproxy version of the Prisma client, generated via:
+// prisma generate --generator=client --data-proxy
+generator client {
+  provider = "prisma-client-js"
+}
+
+// non-dataproxy version of the client for use by the local proxy
+// under local development. generated via:
+// prisma generate --generator=client_localproxy
+generator client_localproxy {
+  provider = "prisma-client-js"
+
+  // generate to whatever output location you choose
+  output   = "../prisma-local-proxy-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// define your schema here..
+
+model Placeholder {
+  id Int @id @default(autoincrement())
+}

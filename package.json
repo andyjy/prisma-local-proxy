@@ -11,6 +11,11 @@
     "test": "# no tests yet # jest --config jest.config.js --rootDir ."
   },
   "type": "module",
+  "files": [
+    "client.ts",
+    "server.ts",
+    "shared.ts"
+  ],
   "dependencies": {
     "@ungap/structured-clone": "^1.2.0",
     "sql-template-tag": "^5.0.3"
