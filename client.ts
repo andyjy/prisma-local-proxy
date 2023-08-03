@@ -56,7 +56,7 @@ export function isPrismaLocalProxy(): boolean {
 //
 // this needs to be the first client extension applied, so that any subsequent extensions
 // that use $transaction will use our override (e.g. Row Level Security)
-export function withLocalProxyPre(getRequestContext?: () => any) {
+export function withLocalProxyPre() {
   return defineExtension((prisma) => {
     let finalPrismaClient: typeof Prisma;
 
@@ -90,15 +90,12 @@ export function withLocalProxyPre(getRequestContext?: () => any) {
             let result: any;
             try {
               if (typeof batchOrFn === "function") {
-                await callLocalProxy(
-                  {
-                    operation: "$start",
-                    parentTransactionUUID: inTransaction.getStore()?.parentTxId,
-                    transactionUUID: inTransaction.getStore()?.txId,
-                    transactionOptions: inTransaction.getStore()?.options,
-                  },
-                  getRequestContext
-                );
+                await callLocalProxy({
+                  operation: "$start",
+                  parentTransactionUUID: inTransaction.getStore()?.parentTxId,
+                  transactionUUID: inTransaction.getStore()?.txId,
+                  transactionOptions: inTransaction.getStore()?.options,
+                });
                 result = await batchOrFn(finalPrismaClient);
               } else {
                 result = [];
@@ -108,24 +105,18 @@ export function withLocalProxyPre(getRequestContext?: () => any) {
               }
             } catch (e) {
               debug(`$transaction exception: ${e} - calling $cleanup`);
-              await callLocalProxy(
-                {
-                  operation: "$cleanup",
-                  parentTransactionUUID: inTransaction.getStore()?.parentTxId,
-                  transactionUUID: inTransaction.getStore()?.txId,
-                },
-                getRequestContext
-              );
-              throw e;
-            }
-            await callLocalProxy(
-              {
-                operation: "$commit",
+              await callLocalProxy({
+                operation: "$cleanup",
                 parentTransactionUUID: inTransaction.getStore()?.parentTxId,
                 transactionUUID: inTransaction.getStore()?.txId,
-              },
-              getRequestContext
-            );
+              });
+              throw e;
+            }
+            await callLocalProxy({
+              operation: "$commit",
+              parentTransactionUUID: inTransaction.getStore()?.parentTxId,
+              transactionUUID: inTransaction.getStore()?.txId,
+            });
             return result;
           }
         );
@@ -148,7 +139,7 @@ export function withLocalProxyPre(getRequestContext?: () => any) {
 // the usual Prisma client methods. This must be applied after all other
 // client extensions, so that any other overrides are applied first and not bypassed
 // (since we don't eventually call `query(args)` here, but instead call our local proxy directly)
-export function withLocalProxyPost(getRequestContext?: () => any) {
+export function withLocalProxyPost() {
   return defineExtension((prisma) => {
     const extended = prisma.$extends({
       name: "local-proxy",
@@ -156,17 +147,14 @@ export function withLocalProxyPost(getRequestContext?: () => any) {
         async $allOperations({ args, model, operation }) {
           debug(`prisma $allOperations: ${model}.${operation}`);
           const callback = async () => {
-            const result = await callLocalProxy(
-              {
-                args,
-                model,
-                operation,
-                parentTransactionUUID: inTransaction.getStore()?.parentTxId,
-                transactionUUID: inTransaction.getStore()?.txId,
-                transactionOptions: inTransaction.getStore()?.options,
-              },
-              getRequestContext
-            );
+            const result = await callLocalProxy({
+              args,
+              model,
+              operation,
+              parentTransactionUUID: inTransaction.getStore()?.parentTxId,
+              transactionUUID: inTransaction.getStore()?.txId,
+              transactionOptions: inTransaction.getStore()?.options,
+            });
             debug(
               `local proxy result (${model}.${operation}): ${JSON.stringify(
                 result
@@ -213,12 +201,11 @@ export function withLocalProxyPost(getRequestContext?: () => any) {
   });
 }
 
-async function callLocalProxy(body: any, getRequestContext?: () => any) {
+async function callLocalProxy(body: any) {
   const proxyEndpoint = process.env.PRISMA_LOCAL_PROXY;
   if (!proxyEndpoint) {
     throw new Error("env.PRISMA_LOCAL_PROXY must be set to use local proxy");
   }
-  const requestContext = getRequestContext ? getRequestContext() : undefined;
   let result: Response;
   try {
     result = await fetch(proxyEndpoint, {
@@ -227,12 +214,6 @@ async function callLocalProxy(body: any, getRequestContext?: () => any) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        requestContext:
-          requestContext &&
-          "getProps" in requestContext &&
-          typeof requestContext.getProps === "function"
-            ? requestContext.getProps()
-            : requestContext,
         ...body,
       }),
     });
