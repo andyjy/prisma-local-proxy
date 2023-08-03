@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ExtendedPrismaClient, proxy } from "prisma-local-proxy/server";
+import { proxy } from "prisma-local-proxy/server";
 
 // import from wherever you generated the non-Edge version of the Prisma Client:
 // (the output path for "client_localproxy" in schema.prisma)
