@@ -10,7 +10,6 @@ Associated Prisma feature request: https://github.com/prisma/prisma/issues/20112
 #### TODO:
 
 - [ ] Check this repo works the same as the version used in my project
-- [ ] Add working example
 - [ ] Add test suite
 - [ ] Tidy code
 
@@ -36,7 +35,26 @@ Required elements:
 
 3. **The Prisma Client Extension as defined in `client.ts`** applied to your app's Prisma Client during development only (i.e. not in production) - to intercept all queries and send them via the local proxy instead of remote Data Proxy.
 
-## How to set this up
+## Example using Next.js
+
+See `example-nextjs` folder:
+
+```sh
+cd example-nextjs
+npm install
+npm run generate-prisma-local
+npm run dev
+# and navigate to http://localhost:3000/api/
+```
+
+Test further by:
+
+- providing a valid postgres connection string via `.env.development`
+- adding models in `prisma/schema.prisma`
+- running `prisma db push` etc as appropriate
+- adding code that calls prisma methods on your new models to `pages/api/index.ts`
+
+## How to set this up for your project
 
 ### 1. Generate two copies of the Prisma client, one for each runtime:
 
@@ -79,7 +97,9 @@ prisma generate --generator=client_localproxy
 E.g. this Next.JS api route handler:
 
 ```typescript
-import { ExtendedPrismaClient, proxy } from "prisma-local-proxy";
+// TODO: remove reliance on Next.js
+import type { NextApiRequest, NextApiResponse } from "next";
+import { proxy } from "prisma-local-proxy";
 
 // import from wherever you generated the non-Edge version of the Prisma Client:
 // (the output path for "client_localproxy" in schema.prisma)
@@ -107,23 +127,32 @@ PRISMA_LOCAL_PROXY=http://localhost:3001/
 ```
 
 ```typescript
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/edge";
 
 import {
+  getConnectionString,
   shouldUsePrismaLocalProxy,
   withLocalProxyPre,
   withLocalProxyPost,
-} from "prisma-local-proxy";
+} from "prisma-local-proxy/client";
+
+// attach any other Prisma Client extensions required by our app
+// we encapsulate this in a function so we can call it separately
+// for dev vs. production, below:
+const applyExtensions = (client: PrismaClient) => {
+  const extendedClient = client; //.$extends(...);
+  return extendedClient;
+};
 
 function generatePrismaClient() {
-  const baseClient = new PrismaClient();
-
-  const applyExtensions = (client: typeof baseClient) => {
-    // attach other client extensions required by our app
-    const extendedClient = pre.$extends(...);
-
-    return extendedClient;
-  }
+  // we need to pass the Datasource URL explicitly to the Prisma Client
+  // constructor (rather than default to reading it from the environment)
+  // so we can override it when using the local proxy
+  const baseClient = new PrismaClient({
+    datasources: {
+      db: { url: getConnectionString(process.env.DATABASE_URL ?? "") },
+    },
+  });
 
   if (shouldUsePrismaLocalProxy()) {
     console.info(
@@ -134,9 +163,9 @@ function generatePrismaClient() {
     // but we don't want it to affect the type of our client
     const pre = baseClient.$extends(
       withLocalProxyPre()
-    ) as unknown as typeof prismaClient;
+    ) as unknown as typeof baseClient;
 
-    const extendedClient = applyExtensions(prismaClient);
+    const extendedClient = applyExtensions(pre);
 
     // withLocalProxyPost() is required *after* any other client extensions
     // but we don't want it to affect the type of our client
@@ -148,7 +177,6 @@ function generatePrismaClient() {
     return applyExtensions(baseClient);
   }
 }
-
 
 // export Prisma Client instance according to best practice
 // - see https://www.prisma.io/docs/guides/performance-and-optimization/connection-management#prevent-hot-reloading-from-creating-new-instances-of-prismaclient
@@ -168,4 +196,4 @@ if (process.env.NODE_ENV !== "production") {
 
 ## Debugging
 
-Set `DEBUG_PRISMA_LOCAL_PROXY=1` to enable debug output from both client + server.
+Set env var `DEBUG_PRISMA_LOCAL_PROXY=1` to enable debug output from both client + server.

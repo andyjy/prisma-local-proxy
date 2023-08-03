@@ -16,6 +16,9 @@ const applyExtensions = (client: PrismaClient) => {
 };
 
 function generatePrismaClient() {
+  // we need to pass the Datasource URL explicitly to the Prisma Client
+  // constructor (rather than default to reading it from the environment)
+  // so we can override it when using the local proxy
   const baseClient = new PrismaClient({
     datasources: {
       db: { url: getConnectionString(process.env.DATABASE_URL ?? "") },
